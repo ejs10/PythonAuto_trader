@@ -24,7 +24,11 @@ def run_backtest(df: pd.DataFrame, ticker: str, quantity: int = 1):
         # else: HOLD → 아무것도 안함
 
         #누적 수익률 계산
+        trader.update_total_profit()
         daily_returns.append(trader.total_profit)
+
+    # 최종 결과 출력
+    trader.status()
 
     result = {
         "total_profit": trader.total_profit,
@@ -34,5 +38,4 @@ def run_backtest(df: pd.DataFrame, ticker: str, quantity: int = 1):
     }
     return result
 
-    # 최종 결과 출력
-    trader.status()
+

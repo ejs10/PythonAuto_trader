@@ -8,6 +8,7 @@ def moving_average_strategy(df: pd.DataFrame) -> str :
     :param df: 시세 데이터 (DataFrame, yfinance 포맷)
     :return: 'BUY', 'SELL', or 'HOLD'
     """
+
     short = Config.MA_SHORT
     long = Config.MA_LONG
 
@@ -26,9 +27,18 @@ def moving_average_strategy(df: pd.DataFrame) -> str :
     df["MA_S"] = df["Close"].rolling(window=short).mean()
     df["MA_L"] = df["Close"].rolling(window=long).mean()
 
+    # 최근 2일의 유효한 MA  데이터 확보
+    recent = df[["MA_S", "MA_L"]].dropna().iloc[-2:]
+    if len(recent) < 2:
+        print("⚠️ 최근 이동평균 데이터가 부족합니다.")
+        return "HOLD"
+
     # 최근 2일 데이터 가져오기
-    ma_s_prev, ma_l_prev = df["MA_S"].iloc[-2], df["MA_L"].iloc[-2]
-    ma_s_curr, ma_l_curr = df["MA_S"].iloc[-1], df["MA_L"].iloc[-1]
+    ma_s_prev, ma_l_prev = recent.iloc[0]["MA_S"], recent.iloc[0]["MA_L"]
+    ma_s_curr, ma_l_curr = recent.iloc[1]["MA_S"], recent.iloc[1]["MA_L"]
+
+    # ma_s_prev, ma_l_prev = df["MA_S"].iloc[-2], df["MA_L"].iloc[-2]
+    # ma_s_curr, ma_l_curr = df["MA_S"].iloc[-1], df["MA_L"].iloc[-1]
 
     # 결측치 체크
     if pd.isna(ma_s_prev) or pd.isna(ma_l_prev) or pd.isna(ma_s_curr) or pd.isna(ma_l_curr):

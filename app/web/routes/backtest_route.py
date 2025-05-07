@@ -5,6 +5,8 @@ from data.data_loader import get_price_data
 from strategy.strategy_ma import moving_average_strategy
 from strategy.strategy_rsi import rsi_strategy
 from backtest.backtester import run_backtest
+from trade.trader import PaperTrader
+
 
 backtest_bp = Blueprint('backtest', __name__)
 
@@ -15,12 +17,25 @@ def index():
 @backtest_bp.route('/run_backtest', methods=["POST"])
 def run_backtest_api():
     data = request.json
-    ticker = data.get("ticker")
-    period = data.get("period")
-    strategy = data.get("strategy")
+    ticker = data["ticker"]
+    period = data["period"]
+    strategy = data["strategy"]
     params = data.get("params", {})
 
-    df = get_price_data(ticker, period)
+    df = get_price_data(ticker, period=period)
+
+    if df.empty:
+        return jsonify({"error" : "데이터를 불러오는데 실패했습니다"}), 400
+
+    trader = PaperTrader()
+
+    # data = request.json
+    # ticker = data.get("ticker")
+    # period = data.get("period")
+    # strategy = data.get("strategy")
+    # params = data.get("params", {})
+    #
+    # df = get_price_data(ticker, period)
 
     if strategy == "ma":
         short = int(params.get("short", 5))
@@ -33,5 +48,13 @@ def run_backtest_api():
     else:
         return jsonify({"error": "Unknown strategy"}), 400
 
-    result = run_backtest(df, strategy_fn, ticker)
+    result = run_backtest(df, ticker)
+
+
+    # result = {
+    #     "total_profit": trader.total_profit,
+    #     "cash": trader.cash,
+    #     "position": trader.position
+    # }
+
     return jsonify(result)
