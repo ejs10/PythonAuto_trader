@@ -14,7 +14,6 @@ from config.settings import Config
 app = Flask(__name__)
 CORS(app)  # 프론트엔드와 CORS 허용
 
-@app.route("/")
 #index.html을 리턴
 def index():
     return render_template("index.html")
@@ -51,7 +50,7 @@ def backtest():
                 signal = "HOLD"
 
             price = df["Close"].iloc[i]
-            data_str = df.index[i].strftime("%Y-%m-%d")
+            data = df.index[i].strftime("%Y-%m-%d")
 
             #트레이딩 수행
             if signal == "BUY":
@@ -70,7 +69,7 @@ def backtest():
         result = {
             "total_profit": trader.total_profit,
             "cash": trader.cash,
-            "position": trader.positions.get(ticker, 0),
+            "position": trader.position,
             "signals": signals,
             "price_data": df["Close"].reset_index().rename(columns={"index": "date"}).to_dict(orient="records")
         }
